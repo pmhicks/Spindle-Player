@@ -1,5 +1,5 @@
 // Spindle Player
-// Copyright (C) 2105 Mike Hicks
+// Copyright (C) 2015 Mike Hicks
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -23,13 +23,14 @@ import Cocoa
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
+    
+    var aboutWindowController:NSWindowController?
 
     func applicationDidFinishLaunching(aNotification: NSNotification) {
         // Insert code here to initialize your application
     }
 
     func applicationWillTerminate(aNotification: NSNotification) {
-        // Insert code here to tear down your application
         let defaults = NSUserDefaults.standardUserDefaults()
         defaults.synchronize()
         
@@ -37,6 +38,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         cfg.playList.save()
     }
 
+    @IBAction func aboutAction(sender: NSMenuItem) {
+        if let  storyboard = NSStoryboard(name: "About", bundle: nil) {
+            if let controller = storyboard.instantiateInitialController() as? NSWindowController {
+                aboutWindowController = controller
+                controller.showWindow(nil)
+            }
+        }
+    }
 
 }
 

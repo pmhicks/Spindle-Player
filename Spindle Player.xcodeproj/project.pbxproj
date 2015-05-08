@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2A19EC421AFC12DA001BCA28 /* About.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A19EC411AFC12DA001BCA28 /* About.storyboard */; };
+		2A19EC461AFC1D33001BCA28 /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A19EC451AFC1D33001BCA28 /* AboutViewController.swift */; };
 		2A7DD8A61AF59D17006C4598 /* PlayListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DD8A51AF59D17006C4598 /* PlayListViewController.swift */; };
 		2A7DD8A81AF5B793006C4598 /* PlayListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DD8A71AF5B793006C4598 /* PlayListModel.swift */; };
 		2A7DD8AA1AF72B1D006C4598 /* PlayListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DD8A91AF72B1D006C4598 /* PlayListItem.swift */; };
@@ -40,6 +42,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2A19EC411AFC12DA001BCA28 /* About.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = About.storyboard; sourceTree = "<group>"; };
+		2A19EC451AFC1D33001BCA28 /* AboutViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AboutViewController.swift; sourceTree = "<group>"; };
 		2A7DD8A51AF59D17006C4598 /* PlayListViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlayListViewController.swift; sourceTree = "<group>"; };
 		2A7DD8A71AF5B793006C4598 /* PlayListModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlayListModel.swift; sourceTree = "<group>"; };
 		2A7DD8A91AF72B1D006C4598 /* PlayListItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlayListItem.swift; sourceTree = "<group>"; };
@@ -116,6 +120,8 @@
 				49C07EF61AE9CBD7008467B6 /* Main.storyboard */,
 				496677461AF1ED540027D629 /* SongInfo.storyboard */,
 				4968D5151AF49F6500F11E9A /* PlayList.storyboard */,
+				2A19EC411AFC12DA001BCA28 /* About.storyboard */,
+				2A19EC451AFC1D33001BCA28 /* AboutViewController.swift */,
 				49FFAD061AEB0051001F82AB /* ModuleInfo.swift */,
 				496677501AF31A870027D629 /* SpindleConfig.swift */,
 				49FFAD1C1AEB37E0001F82AB /* AudioPlayer.swift */,
@@ -252,6 +258,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				49C07EF51AE9CBD7008467B6 /* Images.xcassets in Resources */,
+				2A19EC421AFC12DA001BCA28 /* About.storyboard in Resources */,
 				4968D5161AF49F6500F11E9A /* PlayList.storyboard in Resources */,
 				496677471AF1ED540027D629 /* SongInfo.storyboard in Resources */,
 				49C07EF81AE9CBD7008467B6 /* Main.storyboard in Resources */,
@@ -285,6 +292,7 @@
 				491940A21AF042FF00C8F008 /* sp_audio_helper.c in Sources */,
 				2A7DD8A61AF59D17006C4598 /* PlayListViewController.swift in Sources */,
 				2A7DD8AA1AF72B1D006C4598 /* PlayListItem.swift in Sources */,
+				2A19EC461AFC1D33001BCA28 /* AboutViewController.swift in Sources */,
 				4966774D1AF1FE870027D629 /* InfoTableController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
