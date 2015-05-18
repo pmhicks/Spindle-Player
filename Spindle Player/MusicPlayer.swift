@@ -84,6 +84,8 @@ class MusicPlayer {
         ap = nil
         sendEndNotification()
         if !(state == .Unloaded || state == .FailedLoad) {
+            println("releasing XMP")
+            xmp_end_player(context)
             xmp_release_module(context)
         }
         xmp_free_context(context)
