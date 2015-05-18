@@ -38,3 +38,24 @@ func int8TupleToString<T>(tuple:T) -> String {
     }
     return ""
 }
+
+
+
+func md5UInt8ToString<T>(tuple:T) -> String {
+    let reflection = reflect(tuple)
+    var arr:[String] = []
+    for i in 0..<reflection.count {
+        if let value = reflection[i].1.value as? UInt8 {
+            let hex = NSString(format:"%02x", value) as String
+            //let hex = String(value, radix: 16, uppercase: false)
+            arr.append(hex)
+        }
+    }
+    if arr.count == 16 {
+        return arr.reduce("") { $0 + $1 }
+    }
+    return ""
+
+}
+
+
