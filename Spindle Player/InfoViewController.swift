@@ -26,6 +26,8 @@ class InfoViewController: NSViewController {
     
     @IBOutlet weak var titleLabel: NSTextField!
     @IBOutlet weak var formatLabel: NSTextField!
+    @IBOutlet weak var md5Label: NSTextField!
+    
     @IBOutlet weak var patternLabel: NSTextField!
     @IBOutlet weak var sampleLabel: NSTextField!
     @IBOutlet weak var speedLabel: NSTextField!
@@ -51,6 +53,8 @@ class InfoViewController: NSViewController {
         if let song = SpindleConfig.sharedInstance.currentSong {
             titleLabel.stringValue = song.name
             formatLabel.stringValue = song.format
+            md5Label.stringValue = song.md5
+            
             patternLabel.stringValue = "\(song.channelCount) Channels, \(song.patternCount) Patterns"
             sampleLabel.stringValue = "\(song.sampleCount) Samples, \(song.instrumentCount) Instruments"
             speedLabel.stringValue = "Speed: \(song.initialSpeed) BPM: \(song.initialBPM) Global Volume: \(song.globalVolume)"
@@ -59,6 +63,8 @@ class InfoViewController: NSViewController {
         } else {
             titleLabel.stringValue = ""
             formatLabel.stringValue = ""
+            md5Label.stringValue = ""
+            
             patternLabel.stringValue = ""
             sampleLabel.stringValue = ""
             speedLabel.stringValue = ""

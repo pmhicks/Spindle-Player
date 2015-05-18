@@ -26,6 +26,7 @@ struct ModuleInfo {
     let comment:String
     let volumeBase:Int
     let sequenceCount:Int
+    let md5:String
     
     let name:String
     let format:String
@@ -123,6 +124,7 @@ struct ModuleInfo {
         self.comment = String.fromCString(info.comment) ?? ""
         self.volumeBase = Int(info.vol_base)
         self.sequenceCount = Int(info.num_sequences)
+        self.md5 = md5UInt8ToString(info.md5)
         
         var mod = info.mod.memory
         
