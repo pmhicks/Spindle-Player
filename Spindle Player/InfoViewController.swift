@@ -52,7 +52,7 @@ class InfoViewController: NSViewController {
     private func setLabels() {
         if let song = SpindleConfig.sharedInstance.currentSong {
             titleLabel.stringValue = song.name
-            formatLabel.stringValue = song.format
+            formatLabel.stringValue = "\(song.format) (\(song.simpleFormat))"
             md5Label.stringValue = song.md5
             
             patternLabel.stringValue = "\(song.channelCount) Channels, \(song.patternCount) Patterns"

@@ -37,6 +37,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let cfg = SpindleConfig.sharedInstance
         cfg.playList.save()
     }
+    
+    func application(sender: NSApplication, openFile filename: String) -> Bool {
+        if let url = NSURL.fileURLWithPath(filename) {
+            let center = NSNotificationCenter.defaultCenter()
+            center.postNotificationName(SpindleConfig.kOpenFile, object: url)
+            return true
+        }
+        return false
+    }
 
     @IBAction func aboutAction(sender: NSMenuItem) {
         if let  storyboard = NSStoryboard(name: "About", bundle: nil) {

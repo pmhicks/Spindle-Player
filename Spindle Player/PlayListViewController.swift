@@ -27,7 +27,6 @@ class PlayListViewController: NSViewController, NSTableViewDataSource, NSTableVi
     
     @IBOutlet weak var playListTableView: NSTableView!
     
-    
     @IBAction func okAction(sender: NSButton) {
         let cfg = SpindleConfig.sharedInstance
         cfg.playList.setListItems(self.playList)
@@ -38,11 +37,7 @@ class PlayListViewController: NSViewController, NSTableViewDataSource, NSTableVi
         self.view.window?.close()
     }
     
-    @IBAction func clearListAction(sender: NSButton) {
-        playList.viewClearList()
-        self.playListTableView.reloadData()
-    }
-    
+       
     @IBAction func addAction(sender: NSButton) {
         var openPanel = NSOpenPanel()
         openPanel.allowsMultipleSelection = true
@@ -55,8 +50,8 @@ class PlayListViewController: NSViewController, NSTableViewDataSource, NSTableVi
                     for url in urlList {
                         if url.fileURL {
                             //TODO: add testing of mod
-                            let item = PlayListItem(url: url)
-                            self.playList.viewAppend(item)
+//                            let item = PlayListItem(url: url)
+//                            self.playList.viewAppend(item)
                         }
                         
                     }
@@ -67,46 +62,31 @@ class PlayListViewController: NSViewController, NSTableViewDataSource, NSTableVi
     }
     
     @IBAction func removeAction(sender: NSButton) {
-        let index = self.playListTableView.selectedRow
-        if index >= 0 {
-            playList.viewRemove(index)
-            self.playListTableView.reloadData()
-            
+        let alert = NSAlert()
+        alert.messageText = "Do you want to move module(s) to the trash or just remove from the play list?"
+        let trashButton = alert.addButtonWithTitle("Move to Trash")
+        trashButton.keyEquivalent = ""
+        let removeButton = alert.addButtonWithTitle("Remove from List")
+        removeButton.keyEquivalent = "\r"
+        alert.addButtonWithTitle("Cancel")
+        let response = alert.runModal()
+        
+        var trash = false
+        var remove = false
+        
+        switch response {
+        case NSAlertFirstButtonReturn:
+            trash = true
+        case NSAlertSecondButtonReturn:
+            remove = true
+        default:
+            break
+        }
+        
+        if trash || remove {
+            playList.remove(playListTableView.selectedRowIndexes, moveToTrash: trash)
         }
     }
-    
-    @IBAction func moveUpAction(sender: NSButton) {
-        let index = self.playListTableView.selectedRow
-        if index >= 0 {
-            let newIndex = playList.viewMoveUp(index)
-            if newIndex >= 0 {
-                self.playListTableView.reloadData()
-                playListTableView?.selectRowIndexes(NSIndexSet(index: newIndex), byExtendingSelection: false)
-            }
-        }
-    }
-    
-    @IBAction func moveDownAction(sender: NSButton) {
-        let index = self.playListTableView.selectedRow
-        if index >= 0 {
-            let newIndex = playList.viewMoveDown(index)
-            if newIndex >= 0 {
-                self.playListTableView.reloadData()
-                playListTableView?.selectRowIndexes(NSIndexSet(index: newIndex), byExtendingSelection: false)
-            }
-        }
-    }
-    
-    @IBAction func shuffleAction(sender: NSButton) {
-        playList.viewShuffleItems()
-        self.playListTableView.reloadData()
-    }
-    @IBAction func sortAction(sender: NSButton) {
-        playList.viewSort()
-        self.playListTableView.reloadData()
-    }
-    
-    
     
     func doubleClickAction(sender: AnyObject) {
         let cfg = SpindleConfig.sharedInstance
@@ -131,12 +111,11 @@ class PlayListViewController: NSViewController, NSTableViewDataSource, NSTableVi
         if self.playList.count > 0 {
             let set = NSIndexSet(index: self.playList.index)
             playListTableView?.selectRowIndexes(set, byExtendingSelection: false)
+            playListTableView?.scrollRowToVisible(self.playList.index)
         }
         
         let selector:Selector = "doubleClickAction:"
         playListTableView?.doubleAction = selector
-        
-        
     }
     
     //MARK: Data Source
@@ -152,6 +131,8 @@ class PlayListViewController: NSViewController, NSTableViewDataSource, NSTableVi
                 return item.time
             case "filename":
                 return item.filename
+            case "format":
+                return item.format
             default:
                 return nil
             }
@@ -161,6 +142,16 @@ class PlayListViewController: NSViewController, NSTableViewDataSource, NSTableVi
     
     func numberOfRowsInTableView(aTableView: NSTableView) -> Int {
         return playList.count
+    }
+    
+    func tableView(tableView: NSTableView, sortDescriptorsDidChange oldDescriptors: [AnyObject]) {
+        if let descriptor = tableView.sortDescriptors.first as? NSSortDescriptor {
+            if let key = descriptor.key() {
+                let sorter = PlayListModel.getSorter(key, ascending: descriptor.ascending)
+                playList.sortList(sorter)
+                self.playListTableView.reloadData()
+            }
+        }
     }
     
     

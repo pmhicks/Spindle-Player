@@ -22,84 +22,18 @@
 import Foundation
 
 
-struct ModuleInfo {
+class ModuleInfo {
+    let url:NSURL
+    
     let comment:String
     let volumeBase:Int
     let sequenceCount:Int
     let md5:String
     
-    let name:String
+    var name:String    //use var to set from filname if unset
     let format:String
     
-    var simpleFormat:String {
-        //has to be a better way than this
-        get {
-            if format.hasSuffix("M.K.") {  //standard 4-chan
-                return "MOD"
-            }
-            if format.hasSuffix("2CHN") {
-                return "MOD"
-            }
-            if format.hasSuffix("6CHN") {
-                return "MOD"
-            }
-            if format.hasSuffix("8CHN") {
-                return "MOD"
-            }
-            if format.hasSuffix("FLT4") { //Startrekker
-                return "MOD"
-            }
-            if format.hasSuffix("FLT8") { //Startrekker
-                return "MOD"
-            }
-            if format.hasSuffix("CD81") {
-                return "MOD"
-            }
-            if format.hasSuffix("M!K!") {
-                return "MOD"
-            }
-            if format.hasSuffix("669") {
-                return "669"
-            }
-            if format.hasSuffix("MTM") {
-                return "MTM"
-            }
-            if format.hasSuffix("S3M") {  //scream tracker 3
-                return "S3M"
-            }
-            
-            if format == "Soundtracker IX" {
-                return "MOD"
-            }
-            if format == "Ultimate Soundtracker" {
-                return "MOD"
-            }
-            
-            if format.hasPrefix("D.O.C Soundtracker") {
-                return "MOD"
-            }
-            if format.hasPrefix("OctaMED") {
-                return "MED"
-            }
-            if format.hasPrefix("Ulta Tracker") {
-                return "ULT"
-            }
-            if format.hasPrefix("Poly Tracker") {
-                return "PTM"
-            }
-            
-            if format.rangeOfString("PTM") != nil {
-                return "PTM"
-            }
-            if format.rangeOfString("XM") != nil {
-                return "XM"
-            }
-            if format.rangeOfString("IT") != nil {
-                return "IT"
-            }
-            return "  "
-        }
-    }
+    var simpleFormat:String
     
     let patternCount:Int
     let trackCount:Int
@@ -120,7 +54,9 @@ struct ModuleInfo {
     let durationSeconds:Int
     
     
-    init(info:xmp_module_info) {
+    init(url:NSURL, info:xmp_module_info) {
+        self.url = url
+        
         self.comment = String.fromCString(info.comment) ?? ""
         self.volumeBase = Int(info.vol_base)
         self.sequenceCount = Int(info.num_sequences)
@@ -131,6 +67,7 @@ struct ModuleInfo {
         //println(mod.name)
         self.name = int8TupleToString(mod.name)
         self.format = int8TupleToString(mod.type)
+        self.simpleFormat = ModuleInfo.xmpFormatToSimple(self.format)
         
         self.patternCount = Int(mod.pat)
         self.trackCount = Int(mod.trk)
@@ -176,5 +113,161 @@ struct ModuleInfo {
         } else {
             self.instruments = []
         }
+    }
+    
+    
+    static func xmpFormatToSimple(format:String) -> String {
+        //MOD
+        if format.hasSuffix("M.K.") {
+            return "MOD"
+        }
+        if format.hasSuffix("M!K!") {
+            return "MOD"
+        }
+        if format.hasSuffix("M&K!") {
+            return "MOD"
+        }
+        if format.hasSuffix("N.T.") {
+            return "MOD"
+        }
+        
+        if format.hasSuffix("2CHN") {
+            return "MOD"
+        }
+        if format.hasSuffix("6CHN") {
+            return "MOD"
+        }
+        if format.hasSuffix("8CHN") {
+            return "MOD"
+        }
+        if format.hasSuffix("12CH") {
+            return "MOD"
+        }
+        if format == "Mod's Grave" {
+            return "MOD"
+        }
+        if format.hasSuffix("FLT4") { //Startrekker
+            return "MOD"
+        }
+        if format.hasSuffix("FLT8") { //Startrekker
+            return "MOD"
+        }
+        if format.hasSuffix("FA04") { //Digital Tracker
+            return "MOD"
+        }
+        if format.hasSuffix("FA06") { //Digital Tracker
+            return "MOD"
+        }
+        if format.hasSuffix("FA08") { //Digital Tracker
+            return "MOD"
+        }
+        if format.hasSuffix("CD81") {
+            return "MOD"
+        }
+        if format == "Soundtracker IX" {
+            return "MOD"
+        }
+        if format == "Ultimate Soundtracker" {
+            return "MOD"
+        }
+        
+        if format.hasPrefix("D.O.C Soundtracker") {
+            return "MOD"
+        }
+
+        //MED or OctaMED
+        if format.hasPrefix("MED") {
+            return "MED"
+        }
+        if format.hasPrefix("OctaMED") {
+            return "MED"
+        }
+        
+        // Composer 669
+        if format.hasSuffix("669") {
+            return "669"
+        }
+        
+        //MultiTracker
+        if format.hasSuffix("MTM") {
+            return "MTM"
+        }
+       
+        //Digital Tracker
+        if format.hasSuffix("DTM") {
+            return "DTM"
+        }
+        
+        //Ultra Tracker
+        if format.hasPrefix("Ultra Tracker") {
+            return "ULT"
+        }
+        
+        //Poly Tracker
+        if format.hasPrefix("Poly Tracker") {
+            return "PTM"
+        }
+
+        //scream tracker
+        if format.hasSuffix("STM") {
+            return "STM"
+        }
+        //scream tracker 3
+        if format.hasSuffix("S3M") {
+            return "S3M"
+        }
+        if format == "Scream Tracker 3" {
+            return "S3M"
+        }
+
+        
+        //Liquid Tracker
+        if format.hasPrefix("Liquid Tracker") {
+            return "LIQ"
+        }
+        if format.hasPrefix("LiquidTrack") {
+            return "LIQ"
+        }
+        
+        //DIGI Booster
+        if format.hasPrefix("DIGI Booster") {
+            return "DIGI"
+        }
+        
+        //DigiBooster Pro
+        if format.hasPrefix("DigiBooster Pro") {
+            return "DBM"
+        }
+        
+        //Quadra Composer EMOD
+        if format.hasPrefix("Quadra Composer") {
+            return "EMOD"
+        }
+        
+        //Oktalyzer
+        if format == "Oktalyzer" {
+            return "OKT"
+        }
+        
+        //Protracker 3.6+
+        if format.rangeOfString("IFFMODL") != nil {
+            return "PT36"
+        }
+        
+        // XM
+        if format.rangeOfString("XM") != nil {
+            return "XM"
+        }
+        
+        //IT
+        if format == "Impulse Tracker" {
+            return "IT"
+        }
+        if format.rangeOfString("IT") != nil {
+            return "IT"
+        }
+
+        
+        return ""
     }
 }

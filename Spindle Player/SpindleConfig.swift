@@ -29,8 +29,14 @@ class SpindleConfig {
     static let kQueueFinished = "spindle_QueueFinished"
     static let kPlayListChanged = "spindle_playListChanged"
     static let kPlayAtIndex = "spindle_playAtIndex"
+    static let kOpenFile = "spindle_openFile"
     
     let playList:PlayListModel
+    let spindleDirectory:String
+    let moduleDirectory:String
+    
+    var autoAddModules:Bool   //auto add modules to play list
+    var manageModules:Bool    //copy modules to ~/Music/SpindlePlayer
     
     var currentSong:ModuleInfo? {
         didSet {
@@ -53,7 +59,58 @@ class SpindleConfig {
 
     
     private init() {
+        var error: NSError?
+
         playList = PlayListModel.load()
+        
+        let fm = NSFileManager.defaultManager()
+        let paths = NSSearchPathForDirectoriesInDomains(.MusicDirectory, .UserDomainMask, true) as NSArray
+        let musicDir = paths.firstObject as! NSString
+        
+        spindleDirectory = musicDir.stringByAppendingPathComponent("SpindlePlayer")
+        moduleDirectory = spindleDirectory.stringByAppendingPathComponent("modules")
+        if !fm.fileExistsAtPath(spindleDirectory) {
+            fm.createDirectoryAtPath(spindleDirectory, withIntermediateDirectories: false, attributes: nil, error: &error)
+            if error != nil {
+                println("Error creating Spindle dir: \(error)")
+            }
+        }
+        error = nil
+        if !fm.fileExistsAtPath(moduleDirectory) {
+            fm.createDirectoryAtPath(moduleDirectory, withIntermediateDirectories: false, attributes: nil, error: &error)
+            if error != nil {
+                println ("Error creating modules dir: \(error)")
+            }
+        }
+        
+        //TODO: Make Configurable
+        manageModules = true
+        autoAddModules = true
+        
+    }
+    
+    //returns new filename on success or nil on failure
+    func addModuleToMusic(sourceFileUrl:NSURL) -> NSURL? {
+        let fm = NSFileManager.defaultManager()
+        
+        let mod = sourceFileUrl.lastPathComponent!
+        let destFile = moduleDirectory.stringByAppendingPathComponent(mod)
+        let destFileUrl = NSURL(fileURLWithPath: destFile)!
+        
+        if fm.fileExistsAtPath(destFile) {
+            //treat as success
+            return destFileUrl
+        }
+        
+        var err: NSError?
+        let copied = fm.copyItemAtURL(sourceFileUrl, toURL: destFileUrl, error: &err)
+        
+        if copied {
+            return destFileUrl
+        }
+        //else failure
+        println("Module copy failed \(err)")
+        return nil
     }
     
     private func load() {

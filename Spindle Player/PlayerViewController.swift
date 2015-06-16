@@ -44,7 +44,6 @@ public class PlayerViewController: NSViewController {
     }
     
     var shuffle = false {
-        
         didSet {
             let defaults = NSUserDefaults.standardUserDefaults()
             defaults.setBool(shuffle, forKey: PlayerViewController.kShuffleKey)
@@ -53,7 +52,7 @@ public class PlayerViewController: NSViewController {
                 let cfg = SpindleConfig.sharedInstance
                 cfg.playList.shuffle = true
             } else {
-                shuffleLabel.stringValue = "       " //need to fix ui layout
+                shuffleLabel.stringValue = ""
                 let cfg = SpindleConfig.sharedInstance
                 cfg.playList.shuffle = false
             }
@@ -75,6 +74,9 @@ public class PlayerViewController: NSViewController {
     @IBOutlet weak var volumeSlider: NSSlider!
     @IBOutlet weak var repeatLabel: NSTextField!
     @IBOutlet weak var shuffleLabel: NSTextField!
+    @IBOutlet weak var addButton: NSButton!
+    @IBOutlet weak var removeButton: NSButton!
+    
     
     
     //MARK: IBActions
@@ -111,8 +113,7 @@ public class PlayerViewController: NSViewController {
             pl.play()
         } else {
             let list = SpindleConfig.sharedInstance.playList
-            playAtIndex(list.index)
-            
+            playSong(list.current)
         }
     }
     @IBAction func stopAction(sender: NSButton) {
@@ -123,7 +124,7 @@ public class PlayerViewController: NSViewController {
         self.player?.pause()
     }
     @IBAction func nextSongAction(sender: NSButton) {
-        self.nextSong()
+        self.nextSong(true)
     }
     @IBAction func previousSongAction(sender: NSButton) {
         self.previousSong()
@@ -173,6 +174,52 @@ public class PlayerViewController: NSViewController {
         shuffle = !shuffle
     }
     
+    @IBAction func addAction(sender: NSButton) {
+    }
+    
+    @IBAction func removeAction(sender: NSButton) {
+        let cfg = SpindleConfig.sharedInstance
+        let list = cfg.playList
+        let index = list.index
+        let url = cfg.currentSong!.url
+        let title = cfg.currentSong!.name
+        
+        //Sanity check to make sure current song is in list
+        //should never happen
+        if url != list.getAtIndex(index)?.url {
+            println("Current not in play list")
+            println("Current: \(url)")
+            println("List: \(list.getAtIndex(index)?.url)")
+            return
+        }
+        
+        let alert = NSAlert()
+        alert.messageText = "Do you want to move \"\(title)\" to the trash or just remove from the play list?"
+        let trashButton = alert.addButtonWithTitle("Move to Trash")
+        trashButton.keyEquivalent = ""
+        let removeButton = alert.addButtonWithTitle("Remove from List")
+        removeButton.keyEquivalent = "\r"
+        alert.addButtonWithTitle("Cancel")
+        let response = alert.runModal()
+        
+        var trash = false
+        var remove = false
+        
+        switch response {
+        case NSAlertFirstButtonReturn:
+            trash = true
+        case NSAlertSecondButtonReturn:
+            remove = true
+        default:
+            break
+        }
+        
+        if trash || remove {
+            list.remove(index, moveToTrash: trash)
+            nextSong(true)
+        }
+
+    }
     
     //MARK: Class functions
     private func setLabels() {
@@ -188,7 +235,7 @@ public class PlayerViewController: NSViewController {
         if shuffle {
             shuffleIndicator.stringValue = "Shuffle"
         } else {
-            shuffleIndicator.stringValue = "       "
+            shuffleIndicator.stringValue = ""
 
         }
         
@@ -211,13 +258,23 @@ public class PlayerViewController: NSViewController {
             songTotalTime.stringValue = "\(min):\(sec)"
             songSoundDetails.stringValue = "44kHz 16-Bit Stereo"
             
+            let list = SpindleConfig.sharedInstance.playList
+            if list.moduleInList(curr.md5) {
+                addButton.enabled = false
+                removeButton.enabled = true
+            } else {
+                addButton.enabled = true
+                removeButton.enabled = false
+            }
+            
         } else {
             songTitle.stringValue = ""
             songType.stringValue = ""
             songPatternIndex.stringValue = "000/000"
             songTotalTime.stringValue = "00:00"
             songSoundDetails.stringValue = "44kHz 16-Bit Stereo"
-            
+            addButton.enabled = false
+            removeButton.enabled = false
         }
         
     }
@@ -227,8 +284,8 @@ public class PlayerViewController: NSViewController {
         playSong(list.previous)
     }
     
-    func nextSong() {
-        if repeat && player != nil {
+    func nextSong(userInitiated:Bool) {
+        if !userInitiated && repeat && player != nil {
             player?.play()
         } else {
             let list = SpindleConfig.sharedInstance.playList
@@ -261,6 +318,7 @@ public class PlayerViewController: NSViewController {
 
 
     override public func viewDidLoad() {
+        println("viewDidLoad()")
         super.viewDidLoad()
         self.setLabels()
         self.volumeSlider.floatValue = self.volume
@@ -269,8 +327,8 @@ public class PlayerViewController: NSViewController {
         self.repeat = defaults.boolForKey(PlayerViewController.kRepeatKey)
         self.shuffle = defaults.boolForKey(PlayerViewController.kShuffleKey)
         
-        
         let cfg = SpindleConfig.sharedInstance
+        
         let center = NSNotificationCenter.defaultCenter()
         
         center.addObserverForName(SpindleConfig.kSongChanged, object: nil, queue: NSOperationQueue.mainQueue()) { [weak self]_ in
@@ -278,7 +336,7 @@ public class PlayerViewController: NSViewController {
         }
         
         center.addObserverForName(SpindleConfig.kSongFinished, object: nil, queue: NSOperationQueue.mainQueue()) { [weak self] _ in
-            self?.nextSong()
+            self?.nextSong(false)
         }
         
         center.addObserverForName(SpindleConfig.kPlayListChanged, object: nil, queue: NSOperationQueue.mainQueue()) { [weak self] _ in
@@ -317,8 +375,30 @@ public class PlayerViewController: NSViewController {
                 self?.playAtIndex(num.integerValue)
             }
         }
-    }
     
+    
+        center.addObserverForName(SpindleConfig.kOpenFile, object: nil, queue: NSOperationQueue.mainQueue()) { [weak self] note in
+            if let myself = self {
+                if let url = note.object as? NSURL {
+                    myself.player = nil
+                    myself.player = MusicPlayer(volume: myself.volume)
+                    let status = myself.player!.load(url)
+                    if status.success {
+                        cfg.currentSong = status.module
+                        myself.songIndexList.stringValue = "Song 0000 of 0000"
+                        myself.player?.play()
+                    } else {
+                        let alert = NSAlert()
+                        alert.messageText = "Module Load Failed"
+                        alert.informativeText = status.error
+                        alert.runModal()
+                    }
+                    
+                }
+            }
+        }
+    }
+
 
     public override var representedObject: AnyObject? {
         didSet {

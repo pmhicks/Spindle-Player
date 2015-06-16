@@ -22,9 +22,13 @@
 import Foundation
 
 class PlayListItem {
+    
+    let url:NSURL
+    let md5:String
+    
     var title:String
     var lengthSeconds:Int
-    var url:NSURL
+    var format:String
     
     var time:String {
         if lengthSeconds > 0 {
@@ -39,16 +43,37 @@ class PlayListItem {
         return url.lastPathComponent ?? ""
     }
     
-    var sortkey:String {
-        if title != "" {
-            return title.lowercaseString
-        }
-        return filename.lowercaseString
-    }
+    lazy var sortkey:String = Factory.generateSortKey(self.title)
     
-    init(url:NSURL) {
+    init(url:NSURL, md5:String) {
+        self.url = url
+        self.md5 = md5
+        
         title = ""
         lengthSeconds = 0
-        self.url = url
+        format = ""
+    }
+    
+    init(module:ModuleInfo) {
+        url = module.url
+        md5 = module.md5
+        
+        title = module.name
+        lengthSeconds = module.durationSeconds
+        format = module.simpleFormat
+    }
+    
+}
+
+
+extension PlayListItem {
+    
+    private class Factory {
+        static let charactersToRemove = NSCharacterSet.alphanumericCharacterSet().invertedSet
+        
+        class func generateSortKey(title:String)->String {
+            return "".join((title.lowercaseString).componentsSeparatedByCharactersInSet(Factory.charactersToRemove))
+        }
     }
 }
+

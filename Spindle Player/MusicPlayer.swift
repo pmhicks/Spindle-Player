@@ -92,7 +92,11 @@ class MusicPlayer {
     }
     
     func load(url:NSURL) -> (module:ModuleInfo?, success:Bool, error:String) {
-        var xstruct = xmp_test_info()
+        return loadAndAdd(url, doAdd: true)
+    }
+    
+    private func loadAndAdd(url:NSURL, doAdd:Bool) -> (module:ModuleInfo?, success:Bool, error:String) {
+        let cfg = SpindleConfig.sharedInstance
         
         if !url.fileURL {
             self.state = .FailedLoad
@@ -119,18 +123,37 @@ class MusicPlayer {
         
         var rawinfo = xmp_module_info()
         xmp_get_module_info(context, &rawinfo)
-        let info = ModuleInfo(info: rawinfo)
+        let info = ModuleInfo(url: url, info: rawinfo)
+        
+        if info.name == "" {
+            info.name = url.lastPathComponent ?? ""
+        }
+        
+        if doAdd {
+            var newUrl:NSURL?
+            if cfg.manageModules {
+                newUrl = cfg.addModuleToMusic(url)
+                
+            }
+            if cfg.autoAddModules {
+                if let modUrl = newUrl {
+                    let item = PlayListItem(module: info)
+                    cfg.playList.add(item)
+                }
+            }
+        }
         
         state = .Loaded
         return (info, true, "")
     }
     
     func load(item:PlayListItem) -> (module:ModuleInfo?, success:Bool, error:String) {
-        let status = load(item.url)
+        let status = loadAndAdd(item.url, doAdd: false)
         
         if status.success {
             item.title = status.module?.name ?? ""
             item.lengthSeconds = status.module?.durationSeconds ?? 0
+            item.format = status.module?.simpleFormat ?? ""
         }
         return status
     }
